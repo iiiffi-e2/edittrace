@@ -143,7 +143,39 @@
 	border-color: var(--et-border);
 }
 
+/* Launcher (narrow screens) ------------------------------------------- */
+.edittrace-launcher {
+	position: fixed;
+	z-index: 2147483001;
+	right: 12px;
+	bottom: 12px;
+	appearance: none;
+	border: 1px solid var(--et-border);
+	background: var(--et-bg);
+	color: var(--et-text);
+	font: 600 12px/1 var(--et-font);
+	padding: 10px 14px;
+	border-radius: 999px;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+	cursor: pointer;
+}
+
+.edittrace-launcher::before {
+	content: "";
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	margin-right: 8px;
+	border-radius: 50%;
+	background: var(--et-accent);
+	vertical-align: 1px;
+}
+
 /* Panel --------------------------------------------------------------- */
+.edittrace-panel:focus {
+	outline: none;
+}
+
 .edittrace-panel {
 	position: fixed;
 	z-index: 2147483002;

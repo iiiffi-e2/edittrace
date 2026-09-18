@@ -27,6 +27,8 @@ export class Panel {
 		this.element.className = 'edittrace-panel';
 		this.element.setAttribute( 'role', 'complementary' );
 		this.element.setAttribute( 'aria-label', 'EditTrace' );
+		this.element.setAttribute( 'aria-live', 'polite' );
+		this.element.setAttribute( 'tabindex', '-1' );
 		this.element.hidden = true;
 		root.appendChild( this.element );
 		this.element.addEventListener( 'click', ( e ) => this.handleClick( e ) );
@@ -42,6 +44,14 @@ export class Panel {
 		this.element.innerHTML = this.render( state );
 		if ( state.status !== 'idle' ) {
 			this.element.scrollTop = 0;
+		}
+		if ( state.status === 'result' || state.status === 'error' ) {
+			// Move keyboard focus into the panel so screen readers announce it and Esc/Tab work from there.
+			try {
+				this.element.focus( { preventScroll: true } );
+			} catch {
+				// Focus can fail in detached documents (tests); ignore.
+			}
 		}
 	}
 

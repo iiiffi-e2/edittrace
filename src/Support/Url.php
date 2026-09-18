@@ -43,6 +43,9 @@ final class Url {
 		if ( in_array( $scheme, array( 'mailto', 'tel', 'sms' ), true ) ) {
 			return $scheme . ':' . strtolower( (string) ( $parts['path'] ?? '' ) );
 		}
+		if ( ! in_array( $scheme, array( 'http', 'https' ), true ) ) {
+			return '';
+		}
 		$host = strtolower( $parts['host'] ?? '' );
 		$host = preg_replace( '/^www\./', '', $host ) ?? $host;
 		$path = $parts['path'] ?? '/';

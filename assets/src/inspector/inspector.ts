@@ -24,6 +24,7 @@ export class Inspector {
 	private pendingHover: Element | null = null;
 	private controller: AbortController | null = null;
 	private requestId = 0;
+	private launcher: HTMLElement | null = null;
 
 	constructor( private readonly config: EditTraceConfig, styles: string ) {
 		this.api = new ApiClient( config );
@@ -56,6 +57,35 @@ export class Inspector {
 
 	isActive(): boolean {
 		return this.active;
+	}
+
+	/**
+	 * Shows a compact floating launcher (used when the admin bar button is
+	 * not reachable, e.g. on narrow screens where the toolbar overflows).
+	 */
+	showLauncher(): void {
+		if ( this.launcher ) {
+			this.launcher.hidden = this.active;
+			return;
+		}
+		if ( ! this.host.isConnected ) {
+			document.body.appendChild( this.host );
+		}
+		const button = document.createElement( 'button' );
+		button.type = 'button';
+		button.className = 'edittrace-launcher';
+		button.setAttribute( 'aria-label', 'Activate EditTrace inspector' );
+		button.title = 'EditTrace';
+		button.textContent = 'EditTrace';
+		button.addEventListener( 'click', () => this.activate() );
+		this.shadow.appendChild( button );
+		this.launcher = button;
+		document.addEventListener( 'edittrace:activate', () => {
+			button.hidden = true;
+		} );
+		document.addEventListener( 'edittrace:deactivate', () => {
+			button.hidden = false;
+		} );
 	}
 
 	toggle(): void {

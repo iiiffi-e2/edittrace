@@ -57,15 +57,18 @@ final class TransientTraceStorage implements TraceStorage {
 		}
 		global $wpdb;
 		$like = $wpdb->esc_like( '_transient_timeout_' . self::PREFIX ) . '%';
-		$rows = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$rows = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->prepare(
-				"SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s AND option_value < %d LIMIT 200",
-				$like,
-				time()
+				"SELECT option_name, option_value FROM {$wpdb->options} WHERE option_name LIKE %s LIMIT 500",
+				$like
 			)
 		);
-		foreach ( (array) $rows as $option_name ) {
-			$token = substr( (string) $option_name, strlen( '_transient_timeout_' . self::PREFIX ) );
+		$now = time();
+		foreach ( (array) $rows as $row ) {
+			if ( (int) $row->option_value >= $now ) {
+				continue;
+			}
+			$token = substr( (string) $row->option_name, strlen( '_transient_timeout_' . self::PREFIX ) );
 			delete_transient( self::PREFIX . $token );
 		}
 	}

@@ -1,8 +1,10 @@
 node_modules/
 vendor/
 .wp-local/
-dist/
+dist/*
+!dist/edittrace.zip
 *.zip
+!dist/edittrace.zip
 !assets/build/*
 tests/e2e/.auth/
 test-results/

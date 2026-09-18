@@ -30,6 +30,21 @@ function boot(): void {
 	if ( window.location.hash === '#edittrace' ) {
 		inspector.activate();
 	}
+
+	// The admin bar collapses on narrow screens and may push our node out of
+	// view; offer a floating launcher when the toolbar button is not usable.
+	const ensureLauncher = (): void => {
+		if ( inspector.isActive() ) {
+			return;
+		}
+		const rect = adminBarLink?.getBoundingClientRect();
+		const usable = !! rect && rect.width > 0 && rect.height > 0 && rect.right <= window.innerWidth && rect.left >= 0;
+		if ( ! usable ) {
+			inspector.showLauncher();
+		}
+	};
+	ensureLauncher();
+	window.addEventListener( 'resize', ensureLauncher );
 }
 
 if ( document.readyState === 'loading' ) {
