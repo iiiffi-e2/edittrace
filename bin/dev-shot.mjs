@@ -1,0 +1,15 @@
+import { chromium } from '@playwright/test';
+const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const ctx = await browser.newContext({ storageState: 'tests/e2e/.auth/admin.json', viewport: { width: 1280, height: 800 } });
+const page = await ctx.newPage();
+const [url, selector, out] = process.argv.slice(2);
+await page.goto(url);
+await page.waitForFunction(() => !!window.EditTrace);
+await page.click('#wp-admin-bar-edittrace > a');
+const done = page.evaluate(() => new Promise(r => document.addEventListener('edittrace:result', e => r(e.detail), { once: true })));
+await page.locator(selector).first().click({ force: true });
+const result = await done;
+await page.waitForTimeout(400);
+await page.screenshot({ path: out });
+console.log(JSON.stringify({ status: result.status, primary: result.primary && { system: result.primary.system, sourceName: result.primary.sourceName, itemName: result.primary.itemName, hierarchy: result.primary.hierarchy, confidence: result.primary.confidence, global: result.primary.global, editUrl: result.primary.editUrl } }, null, 1));
+await browser.close();

@@ -1,0 +1,30 @@
+{
+  "name": "edittrace/edittrace",
+  "description": "Click anything on your WordPress site. See exactly where to edit it.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "php": ">=8.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "EditTrace\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "EditTrace\\Tests\\": "tests/php/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit",
+    "test:unit": "phpunit --testsuite unit",
+    "test:integration": "phpunit --testsuite integration"
+  },
+  "config": {
+    "sort-packages": true
+  }
+}

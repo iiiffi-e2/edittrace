@@ -1,0 +1,23 @@
+{
+  "name": "edittrace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Click anything on your WordPress site. See exactly where to edit it.",
+  "license": "GPL-2.0-or-later",
+  "type": "module",
+  "scripts": {
+    "build": "node bin/build.mjs",
+    "watch": "node bin/build.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "zip": "bash bin/build-zip.sh"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "esbuild": "^0.25.0",
+    "jsdom": "^26.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}
