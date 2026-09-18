@@ -55,6 +55,9 @@ function datasetKeys( markers: DomMarker[] ): Set< string > {
 		if ( marker.typeFromDataset ) {
 			keys.add( marker.typeFromDataset );
 		}
+		if ( marker.typeFallbackDataset ) {
+			keys.add( marker.typeFallbackDataset );
+		}
 	}
 	return keys;
 }

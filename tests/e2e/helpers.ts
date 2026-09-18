@@ -46,7 +46,9 @@ export async function inspect( page: Page, selector: string ): Promise< Result >
 				document.addEventListener( 'edittrace:result', ( e ) => resolve( ( e as CustomEvent ).detail as Result ), { once: true } );
 			} )
 	);
-	await page.locator( selector ).first().click( { force: true } );
+	const target = page.locator( selector ).first();
+	await target.evaluate( ( el ) => el.scrollIntoView( { block: 'center' } ) );
+	await target.click( { force: true } );
 	return resultPromise;
 }
 

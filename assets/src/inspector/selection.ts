@@ -117,8 +117,11 @@ function humanize( value: string ): string {
  * Type name from a marker element, e.g. "Heading" from data-widget_type="heading.default".
  */
 export function markerType( el: Element, marker: DomMarker ): string {
-	if ( marker.typeFromDataset ) {
-		const value = ( el as HTMLElement ).dataset?.[ marker.typeFromDataset ];
+	for ( const key of [ marker.typeFromDataset, marker.typeFallbackDataset ] ) {
+		if ( ! key ) {
+			continue;
+		}
+		const value = ( el as HTMLElement ).dataset?.[ key ];
 		if ( value ) {
 			return humanize( value );
 		}

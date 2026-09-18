@@ -45,6 +45,7 @@ final class SourceResolver {
 	 * Resolves the element using every non-fallback provider.
 	 */
 	public function resolve( ElementContext $element, TraceContext $trace ): SourceResult {
+		$this->prepare( $trace );
 		$candidates = $this->collect( $element, $trace, false );
 		$result     = new SourceResult( $element, $trace, $candidates, false );
 
@@ -62,6 +63,7 @@ final class SourceResolver {
 	 * Runs only the fallback providers (on request).
 	 */
 	public function search( ElementContext $element, TraceContext $trace ): SourceResult {
+		$this->prepare( $trace );
 		$candidates = array();
 		foreach ( $this->get_providers( true ) as $provider ) {
 			if ( ! $provider->is_fallback() ) {
@@ -72,6 +74,22 @@ final class SourceResolver {
 		$candidates = $this->rank( $candidates, $element, $trace );
 		$result     = new SourceResult( $element, $trace, $candidates, true );
 		return apply_filters( 'edittrace/result', $result, $element, $trace );
+	}
+
+	/**
+	 * Shares every provider's DOM marker definitions with the context so a
+	 * provider can tell whether another system's evidence sits closer to the
+	 * clicked element than its own.
+	 */
+	private function prepare( TraceContext $trace ): void {
+		$markers = array();
+		foreach ( $this->providers as $provider ) {
+			foreach ( $provider->get_dom_markers() as $marker ) {
+				$marker['provider']               = $provider->get_name();
+				$markers[]                        = $marker;
+			}
+		}
+		$trace->set( 'dom_markers', $markers );
 	}
 
 	/**
@@ -142,6 +160,9 @@ final class SourceResolver {
 			static function ( SourceCandidate $a, SourceCandidate $b ): int {
 				if ( $a->confidence !== $b->confidence ) {
 					return $b->confidence <=> $a->confidence;
+				}
+				if ( $a->depth !== $b->depth ) {
+					return $a->depth <=> $b->depth;
 				}
 				return ( $b->technical['providerPriority'] ?? 0 ) <=> ( $a->technical['providerPriority'] ?? 0 );
 			}

@@ -44,6 +44,8 @@ final class SourceCandidate {
 	public string $role = 'content';
 	/** Short explanation of the evidence used. */
 	public string $reason = '';
+	/** Distance (in ancestors) from the clicked element to the evidence; 0 = the element itself. */
+	public int $depth = 0;
 	/** @var array<string,mixed> Technical metadata (never sensitive values). */
 	public array $technical = array();
 	/** @var array<string,mixed> Usage information (counts, locations). */
@@ -114,6 +116,7 @@ final class SourceCandidate {
 			'globalNote'   => $this->global_note,
 			'role'         => $this->role,
 			'reason'       => $this->reason,
+			'depth'        => $this->depth,
 			'details'      => (object) $this->details,
 			'usage'        => (object) $this->usage,
 			'technical'    => $this->technical,

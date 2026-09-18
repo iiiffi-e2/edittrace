@@ -9,10 +9,16 @@ export interface DomMarker {
 	label: string;
 	/** Dataset key whose value describes the element type (e.g. widget_type). */
 	typeFromDataset?: string;
+	/** Dataset key used when typeFromDataset is absent on the element. */
+	typeFallbackDataset?: string;
 	/** Class prefix whose remainder describes the element type (e.g. wp-block-). */
 	typeFromClassPrefix?: string;
 	/** Dataset keys worth sending to the server for this marker. */
 	datasetKeys?: string[];
+	/** Dataset keys that must all be present for the element to count as this marker (server side). */
+	requiredDatasetKeys?: string[];
+	/** Dataset keys that must be absent. */
+	forbiddenDatasetKeys?: string[];
 }
 
 export interface EditTraceConfig {
