@@ -14,6 +14,8 @@
 
 **Fallback search (Milestone 6).** `FallbackSearch` runs bounded, prepared queries over posts (title exact, content LIKE), post meta (exact then LIKE, private keys excluded, ACF labels resolved), `_elementor_data` (JSON-encoded needle, element located and hierarchy reported), options (sensitive names excluded, core settings mapped to screens) and terms — at most 14 queries / 2.5 s / 10 results. Only runs from `POST /search`; the panel triggers it automatically when a result is Unknown. Fallback candidates are never Exact.
 
+**Per-user switch.** EditTrace is off for every user until they switch it on from the toolbar (nonce-protected admin action stored in user meta). While off, no trace session, instrumentation, markup or script exists for that user; the toolbar only offers "EditTrace" → turn on (which reopens the page in Inspector Mode). While on, the toolbar toggles Inspector Mode and offers "Turn off EditTrace".
+
 **Production pass (Milestone 7).** Depth-aware ranking (nearest evidence wins; enclosing blocks/elements demote themselves to containers; media never outranks placement), weak-noise filtering, accessibility (roles, aria-live, focus management, keyboard support), responsive bottom-sheet panel, narrow-screen launcher, transient purge cron, uninstall cleanup, settings page, documentation and installable ZIP.
 
 ## Exact vs best-effort
@@ -44,6 +46,7 @@
 ## Security measures
 
 - No output, script, style, metadata, registry or REST access for logged-out users (automated PHPUnit + Playwright coverage).
+- Per-user opt-in switch: nothing is loaded or traced until the user turns EditTrace on (`admin-post` action with nonce + capability check, `wp_safe_redirect`).
 - Role allow-list + `edit_posts`; `edittrace/user_can_inspect` cannot grant anonymous users.
 - REST: authentication, `X-WP-Nonce` (`wp_rest`) verification, permission callback, JSON schema validation of the trace token, full sanitization/bounding of the element context (tag, text ≤ 1000, URLs via `esc_url_raw`, classes/dataset allow-lists, ≤ 10 ancestors).
 - Trace registries are bound to the user id that created them, expire after 20 minutes, are capped at 4000 entries, and store fingerprints instead of raw values; password-type fields are never recorded.

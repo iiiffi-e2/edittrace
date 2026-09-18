@@ -12,6 +12,7 @@ namespace EditTrace;
 use EditTrace\Admin\AdminBar;
 use EditTrace\Admin\Assets;
 use EditTrace\Admin\SettingsPage;
+use EditTrace\Admin\Toggle;
 use EditTrace\Inspector\SourceResolver;
 use EditTrace\Inspector\TraceSession;
 use EditTrace\Inspector\TraceStorage;
@@ -27,6 +28,7 @@ use EditTrace\Providers\SourceProviderInterface;
 use EditTrace\REST\Controller;
 use EditTrace\Security\Access;
 use EditTrace\Support\Options;
+use EditTrace\Support\UserPreferences;
 
 /**
  * Composition root. Holds the few long-lived services and hooks them up.
@@ -75,6 +77,7 @@ final class Plugin {
 		add_action( self::CLEANUP_HOOK, array( TransientTraceStorage::class, 'purge_expired' ) );
 
 		( new SettingsPage( $this->options ) )->register();
+		( new Toggle( $this ) )->register();
 		( new AdminBar( $this ) )->register();
 		( new Assets( $this ) )->register();
 	}
@@ -88,14 +91,18 @@ final class Plugin {
 	}
 
 	/**
-	 * Starts a trace session for authorized users on frontend page loads.
-	 * Nothing here runs for anonymous visitors.
+	 * Starts a trace session for authorized users who switched EditTrace on,
+	 * on frontend page loads. Nothing here runs for anonymous visitors or for
+	 * users who have not turned EditTrace on.
 	 */
 	public function maybe_start_session(): void {
 		if ( null !== $this->session ) {
 			return;
 		}
 		if ( ! $this->is_frontend_request() || ! $this->access->user_can_inspect() ) {
+			return;
+		}
+		if ( ! UserPreferences::is_tracing_enabled( get_current_user_id() ) ) {
 			return;
 		}
 		$this->session = TraceSession::start( get_current_user_id() );
@@ -128,7 +135,7 @@ final class Plugin {
 		$this->session->persist( $this->storage );
 	}
 
-	private function is_frontend_request(): bool {
+	public function is_frontend_request(): bool {
 		if ( is_admin() || wp_doing_ajax() || wp_doing_cron() || wp_is_json_request() || is_feed() || is_embed() ) {
 			return false;
 		}

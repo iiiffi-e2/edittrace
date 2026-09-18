@@ -11,3 +11,6 @@
 #wpadminbar .edittrace-admin-bar--active > a .ab-icon::before {
 	color: #06281a !important;
 }
+#wpadminbar .edittrace-admin-bar--off > a .ab-icon::before {
+	opacity: 0.55;
+}

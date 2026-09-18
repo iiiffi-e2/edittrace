@@ -47,6 +47,36 @@ final class AccessTest extends TestCase {
 		$this->assertFalse( $access->user_can_inspect() );
 	}
 
+	public function test_admin_without_switch_gets_no_session_and_switch_turns_it_on(): void {
+		$plugin  = edittrace();
+		$user_id = $this->as_admin();
+		\EditTrace\Support\UserPreferences::set_tracing_enabled( $user_id, false );
+		$plugin->maybe_start_session();
+		$this->assertNull( $plugin->get_session(), 'Tracing is opt-in per user.' );
+
+		require_once ABSPATH . WPINC . '/class-wp-admin-bar.php';
+		$bar = new \WP_Admin_Bar();
+		( new \EditTrace\Admin\AdminBar( $plugin ) )->add_node( $bar );
+		$node = $bar->get_node( 'edittrace' );
+		$this->assertNotNull( $node, 'The toolbar still offers a way to turn EditTrace on.' );
+		$this->assertStringContainsString( 'admin-post.php', $node->href );
+		$this->assertStringContainsString( 'state=on', $node->href );
+		$this->assertStringContainsString( '_wpnonce=', $node->href );
+
+		\EditTrace\Support\UserPreferences::set_tracing_enabled( $user_id, true );
+		try {
+			$plugin->maybe_start_session();
+			$this->assertNotNull( $plugin->get_session() );
+			$bar = new \WP_Admin_Bar();
+			( new \EditTrace\Admin\AdminBar( $plugin ) )->add_node( $bar );
+			$this->assertSame( '#edittrace', $bar->get_node( 'edittrace' )->href );
+			$this->assertStringContainsString( 'state=off', $bar->get_node( 'edittrace-off' )->href );
+		} finally {
+			\EditTrace\Support\UserPreferences::set_tracing_enabled( $user_id, false );
+			remove_action( 'shutdown', array( $plugin, 'persist_session' ), 0 );
+		}
+	}
+
 	public function test_no_session_or_assets_for_anonymous_frontend_request(): void {
 		$plugin = edittrace();
 		$plugin->maybe_start_session();

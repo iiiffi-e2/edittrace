@@ -22,7 +22,7 @@ panel/panel.ts renders Source / Location / Global / Actions / Confidence / Techn
 
 Exact answers require knowing what rendered the page. When an **authorized** user loads a frontend page:
 
-1. `Plugin::maybe_start_session()` (on `template_redirect`) checks `Security\Access::user_can_inspect()` and creates a `TraceSession` with a random 128-bit token.
+1. `Plugin::maybe_start_session()` (on `template_redirect`) checks `Security\Access::user_can_inspect()` **and** the per-user switch (`Support\UserPreferences`, toggled by the nonce-protected `Admin\Toggle` action from the toolbar) and creates a `TraceSession` with a random 128-bit token. Users who have not switched EditTrace on get no session, no instrumentation and no script.
 2. Every provider gets `register_render_hooks( $session )` so it can observe rendering:
    - **Gutenberg** — `Integrations\Gutenberg\BlockInstrumenter` hooks `render_block_data` / `render_block`, tracks the block hierarchy and the *owning source* (post, `wp_template`, `wp_template_part`, `wp_block`, `wp_navigation`, code pattern, widget area) and stamps each block root with `data-edittrace-id="t…"` using `WP_HTML_Tag_Processor`.
    - **Elementor** — records which Elementor documents render (`elementor/frontend/before_get_builder_content`). Elementor's own `data-id` / `data-element_type` / `data-widget_type` / `data-elementor-id` attributes are used as-is.
@@ -100,6 +100,7 @@ tests/php, tests/js, tests/e2e, tests/env
 | `edittrace/source_candidates` | filter | Adjust candidates before ranking (`SourceCandidate[]`, `ElementContext`, `TraceContext`). |
 | `edittrace/result` | filter | Adjust the final `SourceResult`. |
 | `edittrace/user_can_inspect` | filter | Extend/restrict access (`bool`, `WP_User`). Cannot grant logged-out users. |
+| `edittrace/tracing_enabled` | filter | Override the per-user on/off switch (`bool`, user id). |
 | `edittrace/ignored_search_strings` | filter | Strings the fallback search ignores. |
 | `edittrace/frontend_config` | filter | Configuration passed to the inspector script. |
 | `edittrace/session_started` | action | A trace session started for this request (`TraceSession`). |

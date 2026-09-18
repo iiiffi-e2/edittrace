@@ -23,13 +23,13 @@ It understands:
 
 Every answer carries a confidence (Exact, High, Possible, Unknown). Global content (options, template parts, theme builder templates, synced patterns, menus) is clearly flagged because editing it affects more than one page.
 
-EditTrace is only available to logged-in users with an allowed role (administrators by default). Logged-out visitors receive nothing – no scripts, no markup, no data.
+EditTrace is only available to logged-in users with an allowed role (administrators by default), and it stays off for each user until they switch it on from the toolbar. Logged-out visitors receive nothing – no scripts, no markup, no data.
 
 == Installation ==
 
 1. Upload the plugin ZIP via Plugins → Add New → Upload Plugin, or unzip it into `wp-content/plugins/`.
 2. Activate EditTrace.
-3. Visit your site's frontend while logged in and click **EditTrace** in the toolbar.
+3. Visit your site's frontend while logged in and click **EditTrace** in the toolbar to switch it on for your account; click it again to inspect. Use the toolbar submenu to turn it off.
 
 == Frequently Asked Questions ==
 

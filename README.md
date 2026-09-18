@@ -36,6 +36,10 @@ Everything is scored with a confidence (Exact / High / Possible / Unknown). Edit
 2. Plugins → Add New → Upload Plugin → activate.
 3. Visit any frontend page while logged in as an administrator and click **EditTrace** in the toolbar.
 
+## Turning it on
+
+EditTrace is off for every user by default, even administrators, so nothing is traced or loaded while you browse your site. Click **EditTrace** in the toolbar to switch it on for your account; the page reloads with Inspector Mode open. While it is on, the toolbar button toggles Inspector Mode and its submenu offers **Turn off EditTrace**. The switch is per user and persists until you turn it off.
+
 ## Using the inspector
 
 - **Hover** to highlight the element under the cursor. A badge names what it is (`Elementor · Heading`, `Gutenberg · Button`, `Menu · Link`).
@@ -56,6 +60,7 @@ Settings → EditTrace:
 
 ## Security and privacy
 
+- Nothing is traced or loaded for users who have not switched EditTrace on; the switch is a nonce-protected admin action stored in user meta.
 - Logged-out visitors receive no EditTrace scripts, styles, markup, metadata or REST access. This is verified by an automated test.
 - Trace data collected while rendering a page is stored server-side under a random per-request token and expires after 20 minutes. The browser only receives the token and opaque element ids.
 - The inspector never transmits `outerHTML` or values of form fields; only tag names, text, link/image URLs, ids, classes and allow-listed data attributes.
