@@ -1,0 +1,7 @@
+/*
+Theme Name: EditTrace Test Theme
+Description: Minimal block theme used by EditTrace's automated tests. Renders ACF fields, a classic menu and an Elementor "header" library template through small PHP blocks so every V1 source type appears on one site.
+Version: 1.0.0
+Requires at least: 6.5
+Text Domain: edittrace-test
+*/
