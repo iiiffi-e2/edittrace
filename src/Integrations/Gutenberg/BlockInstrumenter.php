@@ -104,6 +104,10 @@ final class BlockInstrumenter {
 			$this->pop_source( $frame['pushed_source'] );
 		}
 
+		if ( $instance instanceof WP_Block && ! empty( $frame['entry'] ) && isset( $instance->context['postId'] ) ) {
+			$this->registry->update( (string) $frame['entry'], array( 'context_post_id' => (int) $instance->context['postId'] ) );
+		}
+
 		if ( ! is_string( $content ) || '' === trim( $content ) || empty( $frame['entry'] ) ) {
 			return $content;
 		}

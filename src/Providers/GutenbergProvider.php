@@ -71,6 +71,7 @@ final class GutenbergProvider extends AbstractProvider {
 			return array();
 		}
 		$block = $this->from_entry( $entry, $found['depth'] );
+		$this->apply_dynamic_block_rules( $block, $entry );
 
 		// Another system's element (e.g. an Elementor widget) sits between the
 		// clicked element and this block: the block merely contains it.
@@ -176,6 +177,92 @@ final class GutenbergProvider extends AbstractProvider {
 		$c->technical    = array( 'postId' => (int) $page['object_id'] );
 		$c->with_confidence( 0.5, __( 'The current page embeds this global content; the content itself is edited at its source.', 'edittrace' ) );
 		return $c;
+	}
+
+	/**
+	 * Core "data" blocks (post title, site title...) display values stored
+	 * elsewhere; point at the real source. Third-party dynamic blocks render
+	 * content from code, so they are reported as high-confidence containers.
+	 *
+	 * @param array<string,mixed> $entry Registry entry.
+	 */
+	private function apply_dynamic_block_rules( SourceCandidate $c, array $entry ): void {
+		$name    = (string) ( $entry['name'] ?? '' );
+		$post_id = (int) ( $entry['context_post_id'] ?? 0 );
+
+		$post_fields = array(
+			'core/post-title'          => __( 'Title', 'edittrace' ),
+			'core/post-excerpt'        => __( 'Excerpt', 'edittrace' ),
+			'core/post-date'           => __( 'Publish Date', 'edittrace' ),
+			'core/post-author'         => __( 'Author', 'edittrace' ),
+			'core/post-author-name'    => __( 'Author', 'edittrace' ),
+			'core/post-featured-image' => __( 'Featured Image', 'edittrace' ),
+			'core/post-terms'          => __( 'Terms', 'edittrace' ),
+		);
+		if ( isset( $post_fields[ $name ] ) && $post_id > 0 ) {
+			$post = get_post( $post_id );
+			if ( $post instanceof \WP_Post ) {
+				$label            = \EditTrace\Support\EditLinks::post_type_label( $post->post_type );
+				$c->source_type   = 'post_field';
+				$c->system        = __( 'WordPress', 'edittrace' );
+				$c->source_id     = (string) $post->ID;
+				$c->source_name   = $post->post_title;
+				$c->source_label  = $label;
+				$c->item_label    = __( 'Post Field', 'edittrace' );
+				$c->item_name     = $post_fields[ $name ];
+				$c->hierarchy     = array( $post->post_title, $post_fields[ $name ] );
+				$c->edit_url      = \EditTrace\Support\EditLinks::post( (int) $post->ID );
+				$c->edit_label    = sprintf( __( 'Edit %s', 'edittrace' ), $label );
+				$c->global        = false;
+				$c->global_note   = '';
+				$c->technical['postId'] = (int) $post->ID;
+				$c->details[ __( 'Displayed by', 'edittrace' ) ] = sprintf( __( '%s block in %s', 'edittrace' ), BlockLabels::title( $name ), (string) ( $entry['source']['title'] ?? '' ) );
+				$c->with_confidence( 1.0, sprintf( __( 'The %s block displays this post field.', 'edittrace' ), BlockLabels::title( $name ) ) );
+			}
+			return;
+		}
+
+		if ( 'core/site-title' === $name || 'core/site-tagline' === $name ) {
+			$c->source_type  = 'wp_option';
+			$c->system       = __( 'WordPress Settings', 'edittrace' );
+			$c->source_id    = 'core/site-title' === $name ? 'blogname' : 'blogdescription';
+			$c->source_name  = __( 'General Settings', 'edittrace' );
+			$c->source_label = __( 'Settings', 'edittrace' );
+			$c->item_label   = __( 'Setting', 'edittrace' );
+			$c->item_name    = 'core/site-title' === $name ? __( 'Site Title', 'edittrace' ) : __( 'Tagline', 'edittrace' );
+			$c->hierarchy    = array( __( 'Settings', 'edittrace' ), __( 'General', 'edittrace' ), $c->item_name );
+			$c->edit_url     = current_user_can( 'manage_options' ) ? admin_url( 'options-general.php' ) : null;
+			$c->edit_label   = __( 'Edit Settings', 'edittrace' );
+			$c->mark_global( __( 'This setting is used across the whole site.', 'edittrace' ) );
+			$c->with_confidence( 1.0, sprintf( __( 'The %s block displays this site setting.', 'edittrace' ), BlockLabels::title( $name ) ) );
+			return;
+		}
+
+		if ( 'core/site-logo' === $name ) {
+			$c->source_type  = 'site_logo';
+			$c->system       = __( 'WordPress', 'edittrace' );
+			$c->source_name  = __( 'Site Logo', 'edittrace' );
+			$c->source_label = __( 'Site Identity', 'edittrace' );
+			$c->item_label   = __( 'Setting', 'edittrace' );
+			$c->item_name    = __( 'Site Logo', 'edittrace' );
+			$c->hierarchy    = array( __( 'Site Identity', 'edittrace' ), __( 'Site Logo', 'edittrace' ) );
+			if ( wp_is_block_theme() ) {
+				$c->edit_url   = current_user_can( 'edit_theme_options' ) ? admin_url( 'site-editor.php' ) : null;
+				$c->edit_label = __( 'Edit Site', 'edittrace' );
+			} else {
+				$c->edit_url   = current_user_can( 'edit_theme_options' ) ? admin_url( 'customize.php?autofocus[section]=title_tagline' ) : null;
+				$c->edit_label = __( 'Open Customizer', 'edittrace' );
+			}
+			$c->mark_global( __( 'The site logo appears wherever the Site Logo block is used.', 'edittrace' ) );
+			$c->with_confidence( 1.0, __( 'The Site Logo block displays the site logo.', 'edittrace' ) );
+			return;
+		}
+
+		$type = \WP_Block_Type_Registry::get_instance()->get_registered( $name );
+		if ( $type && $type->is_dynamic() && 0 !== strpos( $name, 'core/' ) && 0 !== strpos( $name, 'acf/' ) ) {
+			$c->role = 'container';
+			$c->with_confidence( 0.8, __( 'This block renders its content with code; the text or image may come from another source (a custom field, an option or the block settings).', 'edittrace' ) );
+		}
 	}
 
 	private function is_menu_item( string $name ): bool {

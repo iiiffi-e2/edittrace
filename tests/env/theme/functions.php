@@ -119,3 +119,22 @@ add_action(
 		add_theme_support( 'menus' );
 	}
 );
+
+/*
+ * Content with no block/builder/ACF source: printed straight from a hook.
+ * "untraceable-text" is hard-coded (EditTrace must report Unknown);
+ * "option-text" comes from a plain WordPress option (only the fallback
+ * search can find it).
+ */
+add_action(
+	'wp_footer',
+	static function (): void {
+		echo '<div class="theme-hook-output">';
+		echo '<p class="untraceable-text">Printed by a theme hook without any stored source</p>';
+		$option = get_option( 'edittrace_test_footer_text' );
+		if ( is_string( $option ) && '' !== $option ) {
+			echo '<p class="option-text">' . esc_html( $option ) . '</p>';
+		}
+		echo '</div>';
+	}
+);

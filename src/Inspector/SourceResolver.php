@@ -168,6 +168,18 @@ final class SourceResolver {
 			}
 		);
 
+		// A Media Library match is complementary: it never outranks a strong
+		// candidate that says where the image was placed.
+		if ( count( $candidates ) > 1 && 'media' === $candidates[0]->role ) {
+			foreach ( $candidates as $i => $candidate ) {
+				if ( 'media' !== $candidate->role && $candidate->confidence >= Confidence::THRESHOLD_HIGH ) {
+					array_splice( $candidates, $i, 1 );
+					array_unshift( $candidates, $candidate );
+					break;
+				}
+			}
+		}
+
 		return array_slice( $candidates, 0, 10 );
 	}
 }

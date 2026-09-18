@@ -28,7 +28,12 @@ final class Url {
 		} elseif ( 0 === strpos( $url, '/' ) ) {
 			$url = home_url( $url );
 		} elseif ( ! preg_match( '#^[a-z][a-z0-9+.-]*:#i', $url ) ) {
-			return '';
+			// Already normalized ("host/path") or a bare host: treat as https.
+			if ( preg_match( '#^[a-z0-9.-]+(?::\d+)?(?:/|$)#i', $url ) && false === strpos( $url, ' ' ) ) {
+				$url = 'https://' . $url;
+			} else {
+				return '';
+			}
 		}
 		$parts = wp_parse_url( $url );
 		if ( ! is_array( $parts ) ) {

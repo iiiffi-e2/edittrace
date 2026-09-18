@@ -400,5 +400,7 @@ HTML;
 		wp_set_post_terms( $part_id, 'header', 'wp_template_part_area' );
 	}
 
+	update_option( 'edittrace_test_footer_text', 'Footer disclaimer stored in a plain option' );
+
 	update_option( 'edittrace_test_ids', compact( 'home_id', 'contact_id', 'services_id', 'acf_id', 'el_id', 'header_id', 'hero_id', 'pattern_id', 'menu_id', 'nav_id' ) );
 }

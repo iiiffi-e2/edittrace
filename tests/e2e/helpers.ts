@@ -48,7 +48,7 @@ export async function inspect( page: Page, selector: string ): Promise< Result >
 	);
 	const target = page.locator( selector ).first();
 	await target.evaluate( ( el ) => el.scrollIntoView( { block: 'center' } ) );
-	await target.click( { force: true } );
+	await target.click( { force: true, position: { x: 6, y: 6 } } );
 	return resultPromise;
 }
 

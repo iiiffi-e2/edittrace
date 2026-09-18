@@ -72,8 +72,11 @@ final class SourceResult {
 
 		$visible = array();
 		$hidden  = array();
+		$exact   = $primary && $primary->confidence >= 1.0;
 		foreach ( $this->candidates as $candidate ) {
-			if ( $candidate->confidence >= Confidence::THRESHOLD_POSSIBLE ) {
+			// With an exact answer, weak text matches are noise; containers and media stay useful.
+			$weak_noise = $exact && $candidate !== $primary && $candidate->confidence < Confidence::THRESHOLD_HIGH && ! in_array( $candidate->role, array( 'container', 'media' ), true );
+			if ( $candidate->confidence >= Confidence::THRESHOLD_POSSIBLE && ! $weak_noise ) {
 				$visible[] = $candidate->to_array( $debug );
 			} else {
 				$hidden[] = $candidate->to_array( $debug );
